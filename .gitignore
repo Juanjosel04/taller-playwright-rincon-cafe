@@ -1,0 +1,14 @@
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+.claude/
+CLAUDE.md
+material/
+PROMPT_ClaudeCode_HU03_HU04.md
+GUIA_SUSTENTACION.md
+INICIAR_TALLER.bat
+iniciar_taller.ps1
+corrida-*.txt
+app.log
