@@ -12,6 +12,6 @@ test.describe('Inicio de sesión', () => {
     const paginaLogin = new PaginaLogin(page);
     await paginaLogin.ir();
     await paginaLogin.iniciarSesion(usuarioDePrueba.correo, 'ClaveIncorrecta');
-    await expect(paginaLogin.mensaje).toHaveText('Credenciales inválidas');
+    await expect(paginaLogin.mensaje).toHaveText('Texto que no existe');
   });
 });
