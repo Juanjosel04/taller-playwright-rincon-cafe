@@ -1,6 +1,6 @@
 # Pruebas de Playwright
 
-Pruebas E2E de HU-03 (carrito) y HU-04 (cupones) de El Rincón del Café. La explicación completa, la tabla de casos y los bugs encontrados están en el [README de la raíz](../README.md).
+aaaa
 
 ```bash
 npm install
