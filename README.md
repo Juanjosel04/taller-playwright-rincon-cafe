@@ -16,7 +16,7 @@ Escogí dos historias:
 ## Cómo correr la app
 
 ```bash
-cd cafeteria_v2
+cd app
 npm install
 npm start
 ```
@@ -32,13 +32,14 @@ $env:MODO_REFERENCIA="true"; npm start
 
 ## Cómo correr las pruebas
 
-Con la app levantada en otra terminal:
+Playwright enciende la app solo (opción `webServer` del config) y la reutiliza si ya está corriendo en el puerto 3000. Por eso no hace falta levantarla antes:
 
 ```bash
-cd pruebas-playwright
+cd pruebas
 npm install
 npx playwright install
 npx playwright test                    # todos los navegadores
+npm run test:aceptacion               # los casos con @acceptanceTest (los que usa el pipeline)
 npm run test:bugs                      # solo las pruebas que detectan los bugs (@bug)
 npx playwright test --project=chromium # un solo navegador
 npm run test:headed                    # con el navegador visible
@@ -54,12 +55,23 @@ BASE_URL=https://mi-app.onrender.com npx playwright test
 $env:BASE_URL="https://mi-app.onrender.com"; npx playwright test
 ```
 
-Si no se define `BASE_URL`, usa `http://localhost:3000`.
+Si no se define `BASE_URL`, usa `http://localhost:3000` y enciende la app local. Si se define, no enciende nada.
+
+Para probar la versión de referencia, levanta la app en modo referencia en otra terminal antes de correr las pruebas; Playwright la reutiliza.
+
+## Pipeline (GitHub Actions)
+
+El repositorio es un mono repo: la app (`app/`) y sus pruebas (`pruebas/`) viajan en el mismo commit, y el pipeline está en `.github/workflows/pipeline.yml`.
+
+- **Cuándo corre:** con un push o pull request a `main` o `develop`, y a mano con `workflow_dispatch`.
+- **Job `pruebas-aceptacion`:** instala Node 22, hace `npm ci` en `app/` y en `pruebas/`, instala Chromium y corre `npx playwright test --project=chromium --grep @acceptanceTest`. Siempre sube el reporte como artifact.
+- **Job `desplegar-produccion`:** tiene `needs: pruebas-aceptacion` y solo corre en un push a `main`. Si una prueba falla, se omite. Como indica el taller, no se despliega a Render: el pipeline termina en verde si las pruebas pasan.
+- **Qué bloquea la salida:** solo los casos con `@acceptanceTest` en el título (25 de 29). Las 4 pruebas `@bug` quedan fuera a propósito: la app tiene los bugs a la vista y harían fallar el pipeline siempre. Se corren a mano con `npm run test:bugs`.
 
 ## Estructura en capas
 
 ```
-pruebas-playwright/
+pruebas/
 ├── tests/      specs: solo test y expect, sin localizadores ni URLs
 ├── fixtures/   preparan el estado (sesión iniciada, carrito vacío) y entregan la página
 ├── pages/      page objects: único lugar con localizadores y acciones, sin expect
