@@ -32,7 +32,7 @@ $env:MODO_REFERENCIA="true"; npm start
 
 ## Cómo correr las pruebas
 
-Playwright enciende la app solo (opción `webServer` del config) y la reutiliza si ya está corriendo en el puerto 3000. Por eso no hace falta levantarla antes:
+Si la app no está corriendo, Playwright la enciende con la opción `webServer` del config; si ya está en el puerto 3000, la reutiliza (`reuseExistingServer: true`):
 
 ```bash
 cd pruebas
@@ -64,9 +64,10 @@ Para probar la versión de referencia, levanta la app en modo referencia en otra
 El repositorio es un mono repo: la app (`app/`) y sus pruebas (`pruebas/`) viajan en el mismo commit, y el pipeline está en `.github/workflows/pipeline.yml`.
 
 - **Cuándo corre:** con un push o pull request a `main` o `develop`, y a mano con `workflow_dispatch`.
-- **Job `pruebas-aceptacion`:** instala Node 22, hace `npm ci` en `app/` y en `pruebas/`, instala Chromium y corre `npx playwright test --project=chromium --grep @acceptanceTest`. Siempre sube el reporte como artifact.
-- **Job `desplegar-produccion`:** tiene `needs: pruebas-aceptacion` y solo corre en un push a `main`. Si una prueba falla, se omite. Como indica el taller, no se despliega a Render: el pipeline termina en verde si las pruebas pasan.
+- **Job `pruebas-aceptacion` (el único):** instala Node 22, hace `npm ci` en `app/` y en `pruebas/`, instala Chromium, levanta la app en segundo plano (`npm start`) y espera a que `http://localhost:3000` responda. Después corre `npx playwright test --project=chromium --grep @acceptanceTest` y siempre sube el reporte como artifact (`if: always()`).
+- **Resultado:** el job queda en verde solo si todas las pruebas pasan. No hay `continue-on-error`, así que un fallo deja el pipeline en rojo.
 - **Qué bloquea la salida:** solo los casos con `@acceptanceTest` en el título (25 de 29). Las 4 pruebas `@bug` quedan fuera a propósito: la app tiene los bugs a la vista y harían fallar el pipeline siempre. Se corren a mano con `npm run test:bugs`.
+- **No hay despliegue:** el taller llega hasta ejecutar las pruebas de aceptación; no se despliega a Render.
 
 ## Estructura en capas
 
