@@ -40,6 +40,19 @@ jobs:
         working-directory: pruebas
         run: npx playwright install --with-deps chromium
 
+      - name: Levantar la app en el puerto 3000
+        working-directory: app
+        run: nohup npm start > ../app.log 2>&1 &
+
+      - name: Esperar a que la app responda
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000 > /dev/null && exit 0
+            sleep 2
+          done
+          echo "La app no respondió en el puerto 3000"
+          exit 1
+
       - name: Ejecutar pruebas de aceptación
         working-directory: pruebas
         run: npx playwright test --project=chromium --grep @acceptanceTest
@@ -51,11 +64,3 @@ jobs:
           name: playwright-report
           path: pruebas/playwright-report
           if-no-files-found: ignore
-
-  desplegar-produccion:
-    needs: pruebas-aceptacion
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Despliegue
-        run: echo "Las pruebas de aceptación pasaron. En este taller el pipeline termina aquí y no se despliega a Render."

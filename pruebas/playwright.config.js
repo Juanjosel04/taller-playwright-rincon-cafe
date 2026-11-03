@@ -23,6 +23,6 @@ export default defineConfig({
         command: 'npm start',
         cwd: '../app',
         url: 'http://localhost:3000',
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: true,
       },
 });
